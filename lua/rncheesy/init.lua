@@ -13,8 +13,6 @@
 -- TODO: Refactor plugins to separate files
 ------------------------------------------------------------
 
-require('my-config.lazy_init')
-
 -- OPTIONS
 
 -- Style
@@ -27,6 +25,11 @@ vim.opt.smarttab = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.termguicolors = true
+
+-- VARS
+vim.g.mapleader = ' '
+
+require('rncheesy.lazy_init')
 
 -- Remove auto comment insertion
 -- https://vim.fandom.com/wiki/Disable_automatic_comment_insertion#Comments
@@ -126,10 +129,6 @@ cmp.setup({
     ['<S-Tab>'] = cmp_action.select_prev_or_fallback(),
   }),
 })
-
--- telescope file browser
--- open file_browser with the path of the current buffer
-vim.keymap.set('n', '<space>fb', ':Telescope file_browser path=%:p:h select_buffer=true<CR>')
 
 -- nvim-tree stuff
 -- disable netrw at the very start of your init.lua

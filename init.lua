@@ -1,1 +1,1 @@
-require('my-config')
+require('rncheesy')

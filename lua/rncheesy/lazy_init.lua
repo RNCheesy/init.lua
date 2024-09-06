@@ -14,6 +14,6 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
-    spec = 'my-config.lazy', -- import plugins from lazy dir
+    spec = 'rncheesy.lazy', -- import plugins from lazy dir
 })
 
