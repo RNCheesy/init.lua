@@ -31,6 +31,11 @@ vim.g.mapleader = ' '
 
 require('rncheesy.lazy_init')
 
+local augroup = vim.api.nvim_create_augroup
+local lsp_group = augroup('LspGroup', {})
+
+local autocmd = vim.api.nvim_create_autocmd
+
 -- Remove auto comment insertion
 -- https://vim.fandom.com/wiki/Disable_automatic_comment_insertion#Comments
 -- NOTE: this solution doesn't work because of the order of files sourced
@@ -50,85 +55,50 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 -- status bar feline
 require('feline').setup()
 
--- LSP ZERO setup
-local lsp_zero = require('lsp-zero')
-
-lsp_zero.on_attach(function(client, bufnr)
-  -- see :help lsp-zero-keybindings
-  -- to learn the available actions
-  lsp_zero.default_keymaps({buffer = bufnr})
-end)
-
--- LANGUAGE SERVERS SETUP
-
--- lua setup (for this init.lua)
-require'lspconfig'.lua_ls.setup{
-    on_init = function(client)
-    local path = client.workspace_folders[1].name
-    if vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc') then
-      return
+autocmd('LspAttach', {
+    group = lsp_group,
+    callback = function(e)
+        local opts = { buffer = e.buf }
+        vim.keymap.set('n', 'gd', function() vim.lsp.buf.definition() end, opts)
+        vim.keymap.set('n', 'K', function() vim.lsp.buf.hover() end, opts)
+        vim.keymap.set('n', '<leader>vws', function() vim.lsp.buf.workspace_symbol() end, opts)
+        vim.keymap.set('n', '<leader>vd', function() vim.diagnostic.open_float() end, opts)
+        vim.keymap.set('n', '<leader>vca', function() vim.lsp.buf.code_action() end, opts)
+        vim.keymap.set('n', '<leader>vrr', function() vim.lsp.buf.references() end, opts)
+        vim.keymap.set('n', '<leader>vrn', function() vim.lsp.buf.rename() end, opts)
+        vim.keymap.set('i', '<C-h>', function() vim.lsp.buf.signature_help() end, opts)
+        vim.keymap.set('n', '[d', function() vim.diagnostic.goto_next() end, opts)
+        vim.keymap.set('n', ']d', function() vim.diagnostic.goto_prev() end, opts)
     end
-
-    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-      runtime = {
-        -- Tell the language server which version of Lua you're using
-        -- (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT'
-      },
-      -- Make the server aware of Neovim runtime files
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME,
-          -- Depending on the usage, you might want to add additional paths here.
-           "${3rd}/luv/library"
-          -- "${3rd}/busted/library",
-        }
-        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-        -- library = vim.api.nvim_get_runtime_file("", true)
-      }
-    })
-  end,
-  settings = {
-    Lua = {}
-  }
-}
-
--- javascript/typescript setup
-require'lspconfig'.tsserver.setup{}
-
--- python setup
-require'lspconfig'.pyright.setup{}
-
--- Customizing lsp-cmp
--- TODO: Consider adding cmp-buffer for extracting suggestions from current buffer
-local cmp = require('cmp')
-local cmp_action = require('lsp-zero').cmp_action() -- for tab completion
-
-cmp.setup({
-  -- preselect first item in completion menu
-  preselect = 'item',
-  completion = {
-    completeopt = 'menu,menuone,noinsert'
-  },
-
-  -- CUSTOM MAPPING
-  mapping = cmp.mapping.preset.insert({
-    -- confirm completion
-    ['<C-y>'] = cmp.mapping.confirm({select = true}),
-
-    -- scroll up and down the documentation window
-    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-d>'] = cmp.mapping.scroll_docs(4),
-
-    -- use <CR> to confirm completion
-    ['<CR>'] = cmp.mapping.confirm({select = false}),
-
-    -- tab completion
-    ['<Tab>'] = cmp_action.tab_complete(),
-    ['<S-Tab>'] = cmp_action.select_prev_or_fallback(),
-  }),
 })
+
+-- local cmp = require('cmp')
+-- local cmp_action = require('lsp-zero').cmp_action() -- for tab completion
+-- 
+-- cmp.setup({
+--   -- preselect first item in completion menu
+--   preselect = 'item',
+--   completion = {
+--     completeopt = 'menu,menuone,noinsert'
+--   },
+-- 
+--   -- CUSTOM MAPPING
+--   mapping = cmp.mapping.preset.insert({
+--     -- confirm completion
+--     ['<C-y>'] = cmp.mapping.confirm({select = true}),
+-- 
+--     -- scroll up and down the documentation window
+--     ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+--     ['<C-d>'] = cmp.mapping.scroll_docs(4),
+-- 
+--     -- use <CR> to confirm completion
+--     ['<CR>'] = cmp.mapping.confirm({select = false}),
+-- 
+--     -- tab completion
+--     ['<Tab>'] = cmp_action.tab_complete(),
+--     ['<S-Tab>'] = cmp_action.select_prev_or_fallback(),
+--   }),
+-- })
 
 -- nvim-tree stuff
 -- disable netrw at the very start of your init.lua
